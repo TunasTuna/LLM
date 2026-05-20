@@ -11,15 +11,11 @@ import requests
 import numpy as np
 from ultralytics import YOLO
 
-# ---- CHANGE THESE ----
 ESP32_STREAM_URL = "http://192.168.1.11/stream"
 SERIAL_PORT      = "/dev/ttyUSB0"
 BAUD_RATE        = 9600
-# ----------------------
 
-# How many frames to skip (3 = process every 3rd frame)
 FRAME_SKIP    = 3
-# Seconds between serial sends
 SEND_INTERVAL = 5
 
 DETECTION_LABELS = {
