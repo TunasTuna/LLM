@@ -1,20 +1,10 @@
-/*
-  ESP32-CAM Video Stream Server
-  Streams camera feed over WiFi (MJPEG)
-  Board: AI Thinker ESP32-CAM
-  Fixed: PSRAM check, lower XCLK, compatible frame size
-*/
-
 #include "esp_camera.h"
 #include <WiFi.h>
 #include "esp_http_server.h"
 
-// ---- CHANGE THESE ----
 const char* ssid     = "BELEN-2G";
 const char* password = "@claire10k";
-// ----------------------
 
-// AI Thinker ESP32-CAM pin map
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
 #define XCLK_GPIO_NUM      0
@@ -34,7 +24,6 @@ const char* password = "@claire10k";
 
 httpd_handle_t stream_httpd = NULL;
 
-// MJPEG stream handler
 static esp_err_t stream_handler(httpd_req_t *req) {
   camera_fb_t *fb = NULL;
   esp_err_t res = ESP_OK;
@@ -87,7 +76,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println("\n\nESP32-CAM Starting...");
 
-  // Camera config
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer   = LEDC_TIMER_0;
@@ -107,10 +95,9 @@ void setup() {
   config.pin_sscb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn     = PWDN_GPIO_NUM;
   config.pin_reset    = RESET_GPIO_NUM;
-  config.xclk_freq_hz = 10000000;      // lowered from 20MHz for stability
+  config.xclk_freq_hz = 10000000;
   config.pixel_format = PIXFORMAT_JPEG;
 
-  // Check for PSRAM and set frame size accordingly
   if (psramFound()) {
     Serial.println("PSRAM found!");
     config.frame_size   = FRAMESIZE_QVGA;  // 320x240
@@ -123,18 +110,16 @@ void setup() {
     config.fb_count     = 1;
   }
 
-  // Initialize camera
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
     Serial.printf("Camera init failed! Error: 0x%x\n", err);
     Serial.println("Check camera ribbon cable connection.");
     delay(3000);
-    ESP.restart(); // auto restart and try again
+    ESP.restart();
     return;
   }
   Serial.println("Camera init success!");
 
-  // Adjust camera sensor settings for stability
   sensor_t *s = esp_camera_sensor_get();
   if (s != NULL) {
     s->set_framesize(s, FRAMESIZE_QVGA);
@@ -146,11 +131,10 @@ void setup() {
     s->set_awb_gain(s, 1);
     s->set_exposure_ctrl(s, 1);
     s->set_gain_ctrl(s, 1);
-    s->set_vflip(s, 1);    // flip vertically
-    s->set_hmirror(s, 1);  // mirror horizontally
+    s->set_vflip(s, 1);
+    s->set_hmirror(s, 1);
   }
 
-  // Connect to WiFi
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi");
   int attempts = 0;
